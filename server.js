@@ -49,7 +49,7 @@ function createNewNote(body, noteArray) {
   console.log(__dirname);
   return note;
 }
-
+// deletes note using its id to identify it
 app.delete("/api/notes/:id", (req, res) => {
   const index = notes.findIndex((note) => note.id === req.body.id);
   notes.splice(index, 1);
