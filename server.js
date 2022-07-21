@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 
-const notes = require("./db/db.json");
+const { v4: uuidv4 } = require("uuid");
+
+const { notes } = require("./db/db.json");
 
 const express = require("express");
 const app = express();
@@ -13,23 +15,50 @@ app.use(express.json());
 // links file resources to localhost
 app.use(express.static("public"));
 
+// HTTP GET Requests
 app.get("/api/notes", (req, res) => {
-  res.json(notes.slice(1));
-});
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "./public/index.html"));
+  res.json(notes);
 });
 
 app.get("/notes", (req, res) => {
   res.sendFile(path.join(__dirname, "./public/notes.html"));
 });
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/index.html"));
+});
+// Routes the HTTP POST requests to the specified path
+app.post("/api/notes", (req, res) => {
+  // adds unique id
+  req.body.id = uuidv4();
+  const note = createNewNote(req.body, notes);
+  res.json(note);
+});
 
+function createNewNote(body, noteArray) {
+  const note = body;
+  noteArray.push(note);
+  fs.writeFileSync(
+    path.join(__dirname, "./db/db.json"),
+    JSON.stringify({ notes: noteArray }, null, 2)
+  );
+  console.log(__dirname);
+  return note;
+}
+
+app.delete("/api/notes/:id", (req, res) => {
+  const index = notes.findIndex((note) => note.id === req.body.id);
+  notes.splice(index, 1);
+  fs.writeFileSync(
+    path.join(__dirname, "./db/db.json"),
+    JSON.stringify(notes, null, 2)
+  );
+  res.json(true);
+});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
