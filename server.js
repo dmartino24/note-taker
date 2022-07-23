@@ -3,7 +3,7 @@ const path = require("path");
 
 const { v4: uuidv4 } = require("uuid");
 
-const { notes } = require("./db/db.json");
+let { notes } = require("./db/db.json");
 
 const express = require("express");
 const app = express();
@@ -33,6 +33,9 @@ app.get("*", (req, res) => {
 });
 // Routes the HTTP POST requests to the specified path
 app.post("/api/notes", (req, res) => {
+  if (typeof notes === "undefined") {
+    notes = [];
+  }
   // adds unique id
   req.body.id = uuidv4();
   const note = createNewNote(req.body, notes);
